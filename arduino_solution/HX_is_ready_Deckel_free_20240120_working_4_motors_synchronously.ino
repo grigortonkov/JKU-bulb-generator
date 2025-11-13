@@ -1,4 +1,4 @@
-#include "HX711.h"
+//#include "HX711.h"
 
 #define calibration_factor_a 23 // This value is obtained using the SparkFun_HX711_Calibration sketch
 
