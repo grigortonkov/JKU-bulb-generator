@@ -1,19 +1,27 @@
 <div>
-<button (click)="connect()">Connect</button>
-<button (click)="toggleL1()">Toggle L1</button>
-<button (click)="toggleL2()">Toggle L2</button>
-<button (click)="close()">Close</button>
+    <button (click)="connect()">Connect</button>&nbsp;
+    <button (click)="close()">Close</button>&nbsp;
+    <button (click)="calibrate()">Calibrate</button>&nbsp;
+    <button (click)="toggleL1()">Send 100</button>&nbsp;
+    <input type="text" [(ngModel)]="inputData" placeholder="Enter data to send" width="10" />&nbsp;
+    <button (click)="toggleL2()">Set</button>&nbsp;
+    <button (click)="read()">Read 1</button>
 </div>
 
 <div>
     <div *ngIf="this.port">
-        <span class = "greendot"></span>
+        <span class="greendot"></span>
         <span>Connected</span>
     </div>
     <div *ngIf="!this.port">
-        <span class = "reddot"></span>
+        <span class="reddot"></span>
         <span>Disconnected</span>
     </div>
+    <div>
+        <h3>Received Data:</h3>
+        <p>{{ outputData }}</p>
+        Msg: {{onMessage | async}}
 
+    </div>
 
-</div>
+    <img src="assets/device.png" alt="Device Image" />
