@@ -1,27 +1,37 @@
-<div>
+<div style="float: right; right: 10px; top: 16px; width: 50%;">
     <button (click)="connect()">Connect</button>&nbsp;
     <button (click)="close()">Close</button>&nbsp;
-    <button (click)="calibrate()">Calibrate</button>&nbsp;
-    <button (click)="toggleL1()">Send 100</button>&nbsp;
-    <input type="text" [(ngModel)]="inputData" placeholder="Enter data to send" width="10" />&nbsp;
-    <button (click)="toggleL2()">Set</button>&nbsp;
-    <button (click)="read()">Read 1</button>
+    <hr>
+    <button [disabled]="!this.port" (click)="calibrate()">Calibrate</button>&nbsp;
+    <button [disabled]="!this.port" (click)="toggleL1()">Send 100</button>&nbsp;
+    <hr>
+    Position:
+    <input type="text" maxlength="3" size="3" [(ngModel)]="inputData" placeholder="Enter data to send" width="10" /> mm &nbsp;
+    <button [disabled]="!this.port" (click)="toggleL2()">Set</button>&nbsp;
+    <button [disabled]="!this.port" (click)="motorUp()">UP 1 mm</button>&nbsp;
+    <button [disabled]="!this.port" (click)="motorDown()">DOWN 2 mm</button>
+    <hr>
+
+    <div>
+        <div *ngIf="this.port">
+            <span class="greendot"></span>
+            <span>Connected</span>
+        </div>
+        <div *ngIf="!this.port">
+            <span class="reddot"></span>
+            <span>Disconnected</span>
+        </div>
+        <div>
+            <h3>Received Data:</h3>
+            <p>{{ outputData }}</p>
+            Msg: {{onMessage | async}}
+
+        </div>
+    </div>
 </div>
 
-<div>
-    <div *ngIf="this.port">
-        <span class="greendot"></span>
-        <span>Connected</span>
-    </div>
-    <div *ngIf="!this.port">
-        <span class="reddot"></span>
-        <span>Disconnected</span>
-    </div>
-    <div>
-        <h3>Received Data:</h3>
-        <p>{{ outputData }}</p>
-        Msg: {{onMessage | async}}
-
-    </div>
-
+<div id="device">
     <img src="assets/device.png" alt="Device Image" />
+</div>
+
+<div id="Footer">JKU Loop Reactor: 2025 All rights reserved. Developed by Philip Lidner and Grigor Tonkov</div>

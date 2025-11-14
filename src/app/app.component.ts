@@ -64,19 +64,22 @@ export class AppComponent {
 
   toggleL2() {
     if (this.port)
-      this.serial.sendData("200\n");
+      this.serial.sendData(this.inputData + "\n");
+  }
+
+  motorUp() {
+    if (this.port)
+      this.serial.sendData("1\n");
+  }
+
+  motorDown() {
+    if (this.port)
+      this.serial.sendData("2\n");
   }
 
   calibrate() {
     if (this.port)
       this.serial.sendData("999\n");
-  }
-
-  read() {
-    this.outputData = "try reading...";
-    this.onMessage.next("test");
-    if (this.port) {
-    }
   }
 
   close() {
