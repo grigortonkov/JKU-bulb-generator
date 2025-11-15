@@ -7,9 +7,9 @@
     <hr>
     Position:
     <input type="text" maxlength="3" size="3" [(ngModel)]="inputData" placeholder="Enter data to send" width="10" /> mm &nbsp;
-    <button [disabled]="!this.port" (click)="toggleL2()">Set</button>&nbsp;
+    <button [disabled]="!this.port" (click)="setHeight()">Set</button>&nbsp;
     <button [disabled]="!this.port" (click)="motorUp()">UP 1 mm</button>&nbsp;
-    <button [disabled]="!this.port" (click)="motorDown()">DOWN 2 mm</button>
+    <button [disabled]="!this.port" (click)="motorDown()">DOWN 1 mm</button>
     <hr>
 
     <div>
@@ -30,8 +30,5 @@
     </div>
 </div>
 
-<div id="device">
-    <img src="assets/device.png" alt="Device Image" />
-</div>
-
-<div id="Footer">JKU Loop Reactor: 2025 All rights reserved. Developed by Philip Lidner and Grigor Tonkov</div>
+<app-device [position]="currentHeight*10"></app-device>
+<div id="Footer" style="position: fixed; bottom: 0px;">JKU Loop Reactor: 2025 All rights reserved. Developed by Philip Lidner and Grigor Tonkov</div>

@@ -24,14 +24,16 @@ int M4_in2 = 3;
 int EINSCHALTEN_BOX_PIN = 12;
 int ENDSCHALTER_PIN = 13;
 
-int targetHeight = 0;
+float targetHeight = 0;
 
-int currentHeight = 0;
+float currentHeight = -999; // needs to calibrate first
 
 int COMMAND_STOP = 0;
-int COMMAND_UP = 1;
-int COMMAND_DOWN = 2;
+int COMMAND_UP = -1;
+int COMMAND_DOWN = 1;
 int COMMAND_CALIBRATE = 999;
+
+const float MAX_DISTANCE = 5.00; //200.0; // 200 mm Bewegungsfreiheit von 0 bis Max Point // der wert muss einmal ausgemessen werden
 
 void setup() {
   Serial.begin(9600);
@@ -54,6 +56,8 @@ void setup() {
 
   pinMode(EINSCHALTEN_BOX_PIN, INPUT);
   pinMode(ENDSCHALTER_PIN, INPUT);
+  Serial.println("Waiting for commands. Any number. 0-Stop, 1..200-move, 999-calibrate.");
+  printStatus();
 }
 
 /**
@@ -62,10 +66,10 @@ void setup() {
 void moveLinear(int M1_PUL, float mm) {
   // der Motor microstept mit 40000 Steps für eine Umdrehung
   float ueberstzung = 48.0/32.0;
-  Serial.println(ueberstzung);
+  // Serial.println(ueberstzung);
   long microsteps = 40000*ueberstzung*mm;
-  Serial.print("Move steps:");
-  Serial.println(microsteps);
+  // Serial.print("Move steps:");
+  // Serial.println(microsteps);
 
     for(long x = 0; x < microsteps; x++) // repeat 400 times a revolution when setting 400 on driver
       {
@@ -94,22 +98,69 @@ void stopMotorM1() {
 }
 
 void moveMotorDownM1(float mm) {
-    Serial.println("M1 UP");
+    Serial.println("M1 DOWN");
     digitalWrite(M1_DR, HIGH); // set high level direction
-    moveLinear(M1_PU, mm); 
+    moveLinear(M1_PU, mm);
+    printStatus();
 }
 
 void moveMotorUpM1(float mm) {
-    Serial.println("M1 DOWN");
+    Serial.println("M1 UP");
     digitalWrite(M1_DR, LOW); // set high level direction
-    moveLinear(M1_PU, mm); 
+    moveLinear(M1_PU, mm);
+    printStatus();
 }
 
+void moveMotorTo(float position) {
+ Serial.print("moveMotorTo:");  Serial.println(position);
+ targetHeight = position;
+ if (currentHeight>=0) {
+   while (abs(currentHeight-targetHeight)>=0.1) {
+     Serial.print("Move from ");
+     Serial.print(currentHeight);
+     Serial.print(" to ");
+     Serial.println(targetHeight);
+      if (currentHeight<targetHeight) {
+        moveMotorDownM1(0.1);
+        currentHeight += 0.1;
+      }
+      if (currentHeight>targetHeight) {
+        moveMotorUpM1(0.1);
+        currentHeight -= 0.1;
+      }
+      printStatus();
+   }
+ } else {
+  Serial.println("Calibrate first!");
+ }
+}
+
+void printStatus() {
+  int boxIsOn = digitalRead(EINSCHALTEN_BOX_PIN);
+  int endschalterErreicht = digitalRead(ENDSCHALTER_PIN);
+
+  Serial.print("{Status:{");
+  Serial.print("targetHeight:");
+  Serial.print(targetHeight);
+  Serial.print(",currentHeight:");
+  Serial.print(currentHeight);
+  Serial.print(",boxIsOn:");
+  Serial.print(boxIsOn);
+  Serial.print(",endschalterErreicht:");
+  Serial.print(endschalterErreicht);
+  Serial.print("}}");
+  Serial.println();
+}
+
+/**
+Nach unten bewegen bis endschalterErreicht dann auf Position 0
+*/
 void calibrate() {
   Serial.println("calibrate START");
 
   float totalDistance = 0;
-  float MAX_DISTANCE = 30.0;
+
+  // Nach unten bewegen bis endschalterErreicht 
   for (int stepInMM = 0; stepInMM < MAX_DISTANCE; stepInMM++) {
       int endschalterErreicht = digitalRead(ENDSCHALTER_PIN);
       if (endschalterErreicht==1) {
@@ -119,7 +170,12 @@ void calibrate() {
         Serial.println(totalDistance);
       }
   }
-
+    currentHeight = MAX_DISTANCE;
+    for (int stepInMM = 0; stepInMM < MAX_DISTANCE-1; stepInMM++) {
+        moveMotorUpM1(1.0);
+        currentHeight -=1;
+        printStatus();
+    }
 
    Serial.println("calibrate END");
 }
@@ -127,47 +183,54 @@ void calibrate() {
 int boxIsOnState=-1, endschalterErreichtState=-1;
 void loop() {
   // put your main code here, to run repeatedly:
-  // Serial.println("=======================================");
+
 
   int boxIsOn = digitalRead(EINSCHALTEN_BOX_PIN);
   int endschalterErreicht = digitalRead(ENDSCHALTER_PIN);
- 
+
   if (boxIsOnState != boxIsOn) {
-    Serial.print("Device ON:");
-    Serial.println(boxIsOn);
+    //Serial.print("Device ON:");
+    //Serial.println(boxIsOn);
     boxIsOnState = boxIsOn;
    }
    if (endschalterErreichtState != endschalterErreicht) {
-   Serial.print("Bottom reached:");
-   Serial.println(endschalterErreicht);
+   //Serial.print("Bottom reached:");
+   //Serial.println(endschalterErreicht);
    endschalterErreichtState = endschalterErreicht;
    }
   // if there's any serial available, read it:
   while (Serial.available() > 0) {
     // look for the next valid integer in the incoming serial stream:
     int input = Serial.parseInt();
-    
+    // String strInput = Serial.readString();
     // look for the newline. That's the end of your sentence:
     if (Serial.read() == '\n') {      
       // Serial.print(input); 
+      printStatus();
+      // Serial.print(strInput); 
       if (input == COMMAND_STOP) {
         stopMotorAll();
+        printStatus();
       }
       else if (input == COMMAND_UP) {
         moveMotorUpM1(1.);
+        printStatus();
       }
       else if (input == COMMAND_DOWN) {
         moveMotorDownM1(1.);
+        printStatus();
       }
       else if (input == COMMAND_CALIBRATE) {
         calibrate();
+        printStatus();
       } else {
-      targetHeight = input;
+        if (input < MAX_DISTANCE) { 
+            moveMotorTo(input);
+            printStatus();
+        }
       }
     }
   }
-  Serial.print("targetHeight:");
-  char* buffer;
-  Serial.println(targetHeight);
+
   delay(1000);
 } 
