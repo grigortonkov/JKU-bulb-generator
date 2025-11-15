@@ -1,4 +1,4 @@
-<div style="float: right; right: 10px; top: 16px; width: 50%;">
+<div style="float: right; right: 10px; top: 16px; width: 50%; border-color: cadetblue; border-style: solid; border-width: 1px; padding: 4px; background-color: lightblue;">
     <button (click)="connect()">Connect</button>&nbsp;
     <button (click)="close()">Close</button>&nbsp;
     <hr>
@@ -15,20 +15,21 @@
     <div>
         <div *ngIf="this.port">
             <span class="greendot"></span>
-            <span>Connected</span>
+            <span>&nbsp;Connected</span>
         </div>
         <div *ngIf="!this.port">
             <span class="reddot"></span>
-            <span>Disconnected</span>
+            <span>&nbsp;Disconnected</span>
         </div>
         <div>
-            <h3>Received Data:</h3>
+            <h5>Received Data:</h5>
             <p>{{ outputData }}</p>
             Msg: {{onMessage | async}}
 
         </div>
     </div>
 </div>
+<div style="position: fixed; bottom: 20px;">Test: <button (click)="t()">T</button></div>
 
 <app-device [position]="currentHeight*10"></app-device>
 <div id="Footer" style="position: fixed; bottom: 0px;">JKU Loop Reactor: 2025 All rights reserved. Developed by Philip Lidner and Grigor Tonkov</div>

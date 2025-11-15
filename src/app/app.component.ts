@@ -10,7 +10,8 @@ import { DeviceStatus } from 'src/model/device';
 })
 
 export class AppComponent {
-  title = 'ngx-serial-example';
+
+  title = 'jku-loop-reactor';
 
   serial: NgxSerial;
   port: any;
@@ -41,6 +42,10 @@ export class AppComponent {
       console.log("Device Status updated:", res);
       this.currentHeight = res.Status.currentHeight;
     });
+  }
+
+  t() {
+     this.currentHeight =  this.currentHeight + 1;
   }
 
   updateUIFromLocalStorage() {

@@ -83,8 +83,8 @@ connect() and close() accept a callback function returning the serial port. Can 
     </div>
 
 
- To check an example application made on Angular click [here](https://github.com/archocron/ngx-serial-example) 
- The Arduino Code is located on src/assets/ngx-serial-example.ino
+ To check an example application made on Angular click [here](https://github.com/archocron/jku-loop-reactor) 
+ The Arduino Code is located on src/assets/jku-loop-reactor.ino
 
 ## Broswer support
 At this moment (21/06/2021) Chrome, Opera and Edge are supporting Web Serial API
