@@ -1,3 +1,14 @@
+# Loop Reactor App 
+This angular app can be used as template for apps needing following stack:
+Arduino, Stepper Motor, Web UI (Angular)
+
+Arduino scripts can be found in arduino_solution folder: e.g. MotorSync.ino
+
+The application can be started from the local dist folder (no need for web server)
+
+Thanks to NgxSerial for the initial application. 
+The following is the original readme from NgxSerial. 
+
 # NgxSerial
 
 NgxSerial eases the use of the Serial Web API in Angular.
