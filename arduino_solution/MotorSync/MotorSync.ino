@@ -4,22 +4,22 @@
 // -------------------
 //      M1  M2  M3  M4
 // -------------------
-// PU+  A0  A1  10  11 //Pulse signal input positive end
-// DR+  A4  A5   2   3 //Direction signal input positive end
-// MF+   4   5   6   7 //Enable signal input positive end
-// ALM+  8   9  A2  A3 //Alarm signal output positive end
+// PU+  A0  A1  10  11 // Pulse signal input positive end
+// DR+  A4  A5   2   3 // Direction signal input positive end
+// MF+   4   5   6   7 // Enable signal input positive end
+// ALM+  8   9  A2  A3 // Alarm signal output positive end
 // -------------------
 // Einschalten Box: 12
 // Endscahlter: 13
 
-int M1_PU = A0; //Pulse
-int M1_DR = A4; //Direction
-int M2_in1 = A1;
-int M2_in2 = A5;
-int M3_in1 = A2;
-int M3_in2 = 2;
-int M4_in1 = A3;
-int M4_in2 = 3;
+int M1_PU = A0; // Pulse
+int M1_DR = A4; // Direction
+int M2_PU = A1;
+int M2_DR = A5;
+int M3_PU = 10;
+int M3_DR = 2;
+int M4_PU = 11;
+int M4_DR = 3;
 
 int EINSCHALTEN_BOX_PIN = 12;
 int ENDSCHALTER_PIN = 13;
@@ -46,11 +46,11 @@ void setup() {
   //M1
   pinMode(A0, OUTPUT);
   pinMode(A1, OUTPUT);
-  pinMode(4, OUTPUT);
-  pinMode(8, OUTPUT);
+  pinMode(10, OUTPUT);
+  pinMode(11, OUTPUT);
   
-  pinMode(A2, OUTPUT);
-  pinMode(A3, OUTPUT);
+  pinMode(2, OUTPUT);
+  pinMode(3, OUTPUT);
   pinMode(A4, OUTPUT);
   pinMode(A5, OUTPUT);
 
@@ -83,6 +83,45 @@ void moveLinear(int M1_PUL, float mm) {
       }
 }
 
+/**
+* move in mm
+*/
+void moveLinearAll(float mm) {
+  int boxIsOn = digitalRead(EINSCHALTEN_BOX_PIN);
+  if (boxIsOn == 1) {
+    // User hat die Box nicht aktiviert 
+    Serial.println("Box is OFF");
+    return;
+  }
+  // der Motor microstept mit 40000 Steps für eine Umdrehung
+  float ueberstzung = 48.0/32.0;
+  // Serial.println(ueberstzung);
+  long microsteps = 40000*ueberstzung*mm;
+  // Serial.print("Move steps:");
+  // Serial.println(microsteps);
+
+    for(long x = 0; x < microsteps; x++) // repeat 400 times a revolution when setting 400 on driver
+      {
+        int endschalterErreicht = digitalRead(ENDSCHALTER_PIN);
+        if (endschalterErreicht==1) {
+          digitalWrite(M1_PU,HIGH); // Output high
+          digitalWrite(M2_PU,HIGH); // Output high
+          digitalWrite(M3_PU,HIGH); // Output high
+          digitalWrite(M4_PU,HIGH); // Output high
+
+          delayMicroseconds(50); // set rotate speed
+
+          digitalWrite(M1_PU,LOW); // Output low
+          digitalWrite(M2_PU,LOW); // Output low
+          digitalWrite(M3_PU,LOW); // Output low
+          digitalWrite(M4_PU,LOW); // Output low
+
+          delayMicroseconds(50); // set rotate speed
+        }
+      }
+}
+
+
 void stopMotorAll() {
     Serial.println("STOP ALL MOTORS");
     stopMotorM1();
@@ -95,6 +134,26 @@ void stopMotorM1() {
     Serial.println("M1 STOP");
     digitalWrite(M1_PU, LOW); // bremsen  der Last High High
     digitalWrite(M1_DR, LOW);
+}
+
+void moveMotorDownAll(float mm) {
+    Serial.println("M ALL DOWN");
+    digitalWrite(M1_DR, HIGH); // set high level direction
+    digitalWrite(M2_DR, HIGH); // set high level direction
+    digitalWrite(M3_DR, HIGH); // set high level direction
+    digitalWrite(M4_DR, HIGH); // set high level direction
+    moveLinearAll(mm);
+    printStatus();
+}
+
+void moveMotorUpAll(float mm) {
+    Serial.println("M ALL UP");
+    digitalWrite(M1_DR, LOW); // set high level direction
+    digitalWrite(M2_DR, LOW); // set high level direction
+    digitalWrite(M3_DR, LOW); // set high level direction
+    digitalWrite(M4_DR, LOW); // set high level direction
+    moveLinearAll(mm);
+    printStatus();
 }
 
 void moveMotorDownM1(float mm) {
@@ -121,11 +180,11 @@ void moveMotorTo(float position) {
      Serial.print(" to ");
      Serial.println(targetHeight);
       if (currentHeight<targetHeight) {
-        moveMotorDownM1(0.1);
+        moveMotorDownAll(0.1);
         currentHeight += 0.1;
       }
       if (currentHeight>targetHeight) {
-        moveMotorUpM1(0.1);
+        moveMotorUpAll(0.1);
         currentHeight -= 0.1;
       }
       printStatus();
@@ -164,7 +223,7 @@ void calibrate() {
   for (int stepInMM = 0; stepInMM < MAX_DISTANCE; stepInMM++) {
       int endschalterErreicht = digitalRead(ENDSCHALTER_PIN);
       if (endschalterErreicht==1) {
-        moveMotorDownM1(1.0);
+        moveMotorDownAll(1.0);
         totalDistance += 1.0;
         Serial.print("Reached:");
         Serial.println(totalDistance);
@@ -172,7 +231,7 @@ void calibrate() {
   }
     currentHeight = MAX_DISTANCE;
     for (int stepInMM = 0; stepInMM < MAX_DISTANCE-1; stepInMM++) {
-        moveMotorUpM1(1.0);
+        moveMotorUpAll(1.0);
         currentHeight -=1;
         printStatus();
     }
@@ -213,11 +272,13 @@ void loop() {
         printStatus();
       }
       else if (input == COMMAND_UP) {
-        moveMotorUpM1(1.);
+        // moveMotorUpM1(1.);
+        moveMotorUpAll(1.);
         printStatus();
       }
       else if (input == COMMAND_DOWN) {
-        moveMotorDownM1(1.);
+        //moveMotorDownM1(1.);
+        moveMotorDownAll(1.);
         printStatus();
       }
       else if (input == COMMAND_CALIBRATE) {
