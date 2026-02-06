@@ -21,6 +21,7 @@ export class AppComponent {
   deviceStatus = new Subject<DeviceStatus>();
 
   currentHeight = 0;
+  MAX_DISTANCE = 208;
 
   constructor() {
     console.info("AppComponent initialized.");
@@ -32,7 +33,8 @@ export class AppComponent {
         .replace("targetHeight","\"targetHeight\"")
         .replace("currentHeight","\"currentHeight\"")
         .replace("boxIsOn","\"boxIsOn\"")
-        .replace("endschalterErreicht","\"endschalterErreicht\"");
+        .replace("endschalterErreicht","\"endschalterErreicht\"")
+        .replace("MAX_DISTANCE","\"MAX_DISTANCE\"");
         this.deviceStatus.next(JSON.parse(cleanedMsg) as DeviceStatus);
       }
     });
@@ -41,6 +43,7 @@ export class AppComponent {
     this.deviceStatus.subscribe((res) => {
       console.log("Device Status updated:", res);
       this.currentHeight = res.Status.currentHeight;
+      this.MAX_DISTANCE = res.Status.MAX_DISTANCE;
     });
   }
 
@@ -77,6 +80,11 @@ export class AppComponent {
         this.port = port;
       });
     }
+  }
+
+  stop() {
+    if (this.port)
+      this.serial.sendData("0\n");
   }
 
   toggleL1() {
